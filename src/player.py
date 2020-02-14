@@ -5,13 +5,13 @@ class Player():
     """
     Contains information about the player.
     """
-    def __init__(self, playername, location, points):
+    def __init__(self, playername, location, inventory=[]):
         self.playername = playername
         self.location = location
-        self.points = points
-
+        self.inventory = inventory
     def __str__(self):
-        return self.playername + ": " + self.points
+        return self.playername + " is in the " + self.location.name + \
+" carrying " + str(self.inventory).replace("'", "")
 
     def move(self, direction):
         if getattr(self.location, f'{direction}_to'):
