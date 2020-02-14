@@ -7,7 +7,7 @@ class Room():
     variables point at adjacent rooms, while items should be a list.
     """
     def __init__(self, name, description, n_to=None, s_to=None,
-                 e_to=None, w_to=None, items=[], usable=[]):
+                 e_to=None, w_to=None, items=[]):
         self.name = name
         self.description = description
         self.n_to = n_to
@@ -15,10 +15,9 @@ class Room():
         self.e_to = e_to
         self.w_to = w_to
         self.items = items
-        self.usable = usable
     def __str__(self):
-        shortroom = self.name + ": " + self.description
+        shortroom = f'{self.name}: {self.description}'
         if self.items:
-            return shortroom + "\nitems:" + str(self.items).replace("'", "")
+            return shortroom + "\nitems:" + str([item.name for item in self.items]).replace("'", "")
         else:
             return shortroom

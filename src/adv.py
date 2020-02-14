@@ -1,6 +1,6 @@
 from room import Room
 from player import Player
-from effects import throw_hook, light
+from item import *
 from time import sleep
 import sys
 # Declare all the rooms
@@ -14,7 +14,7 @@ passages run north and east."""),
 
     'overlook': Room("Grand Overlook", """A steep cliff appears before you, falling
 into the darkness. Ahead to the north, a light flickers in
-the distance, but there is no way across the chasm.""", usable='hook'),
+the distance, but there is no way across the chasm."""),
 
     'narrow':   Room("Narrow Passage", """The narrow passage bends here from west
 to north. The smell of gold permeates the air."""),
@@ -24,11 +24,14 @@ chamber! Sadly, it has already been completely emptied by
 earlier adventurers. The only exit is to the south."""),
 
     'lair': Room("Dragon's Lair", """You have entered the forbidden lair of the
-mighty dragon! It is too dark to see and you dare not stumble blindly forward.""",
-usable='lantern')
+mighty dragon! It is too dark to see and you dare not stumble blindly forward.""")
 }
 
-effects = {'hook': throw_hook, 'lantern': light}
+item = {'hook': Item("hook", "A sturdy rope with a hook on the end",
+[room['overlook']], throw_hook), 'lantern': Item("lantern", """A brightly shining
+lantern""", [room['lair']], light), 'claw': Item('claw', """A wicked claw of some
+long-dead beast""", [all for all in room.values()], combine), 'rope': Item('rope', """A
+coil of sturdy rope""", [all for all in room.values()], combine)}
 
 # Link rooms together
 
@@ -43,8 +46,9 @@ room['treasure'].s_to = room['narrow']
 
 # Make items
 
-room['outside'].items = ["hook"]
-room['treasure'].items = ["lantern"]
+room['outside'].items = [item["lantern"]]
+room['treasure'].items = [item["claw"]]
+room['overlook'].items = [item["rope"]]
 #
 # Main
 #
@@ -74,9 +78,9 @@ while True:
         sys.exit()
     elif "get " in action:
         itemget = action.replace('get ', "")
-        if itemget in character.location.items:
-            character.location.items.remove(itemget)
-            character.inventory.append(itemget)
+        if itemget in [item.name for item in character.location.items]:
+            character.location.items.remove(item[itemget])
+            character.inventory.append(item[itemget])
             print(f'You get the {itemget}')
         else:
             print("You can't get ye flask")
@@ -91,13 +95,16 @@ while True:
         print(character)
     elif "use " in action:
         itemuse = action.replace('use ', '')
-        if itemuse in character.inventory and itemuse in character.location.usable:
-            character.inventory.remove(itemuse)
-            print("You did it!")
-            effects[itemuse](room)
-            sleep(1)
+        if itemuse in [item.name for item in character.inventory]:
+            if character.location in item[itemuse].use_case:
+                item[itemuse].effect(room, item, character)
+                sleep(1)
+            else:
+                print("You can't use that here")
         else:
-            print("You can't use that here")
+            print("You don't have anything like that.")
+    elif action == "devtest":
+        print([all for all in room])
     else:
         print("""move around with n, e, s, or w, pick up, use, or drop items,
 or quit with q""")
